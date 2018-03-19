@@ -1,4 +1,5 @@
 <template>
+<keep-alive>
   <div id="home">
     <div class="landing">
       <div id="login"  v-if="!loggedIn">
@@ -16,6 +17,7 @@
       <xmenu :menus="menus" @logout="logout"></xmenu>
     </div>
   </div>
+</keep-alive>
 </template>
 
 <script>

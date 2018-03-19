@@ -2,7 +2,6 @@
     <div id="spinner" style="background: #4267b2;border-radius: 5px;color: white;height: 40px; text-align: center; width: 250px;">
       Loading    
       <div style="float: none; margin: 0 auto;" class="fb-login-button" :data-width="width" :data-max-rows="rows" :data-size="size" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
-      <div id="fb-root"></div>
     </div>
 </template>
 
@@ -48,8 +47,8 @@
 
     mounted () {
       if(window.FB) {
-        FB.Event.subscribe('xfbml.render', this.finished_rendering);
         this.reset()
+        FB.Event.subscribe('xfbml.render', this.finished_rendering);
         return;
       }
       this.init()
@@ -69,7 +68,15 @@
         spinner.removeChild(spinner.childNodes[0]);
       },
       reset () {
-        window.FB.XFBML.parse()
+        let appId = this.appId;
+        setTimeout(function(){
+          FB.init({
+              appId     : appId,
+              xfbml     : true,
+              cookie    : true,
+              version   : 'v2.12'
+            });
+        }, 100)
       },
 
       init () {
