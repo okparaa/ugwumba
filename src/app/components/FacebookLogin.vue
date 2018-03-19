@@ -1,7 +1,7 @@
 <template>
-    <div id="spinner" style="background: #4267b2;border-radius: 5px;color: white;height: 40px; text-align: center; width: 250px;">
-      Loading    
-      <div style="float: none; margin: 0 auto;" class="fb-login-button" :data-width="width" :data-max-rows="rows" :data-size="size" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
+    <div id="spinner" style="background: #4267b2;border-radius: 5px;color: white; height: 40px; text-align: center; width: 100%;">
+      <i ref="loading" class="pt-1 fa fa-spinner fa-spin fa-2x fa-fw"></i>   
+      <div class="fb-login-button" scope="publish_actions, email" onlogin="checkLoginState" :data-width="width" :data-max-rows="rows" :data-size="size" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
     </div>
 </template>
 
@@ -61,24 +61,18 @@
     },
 
     methods: {
+      checkLoginState(){
+
+      },
       finished_rendering(){
         console.log("finished rendering plugins");
-        var spinner = document.getElementById("spinner");
-        spinner.removeAttribute("style");
-        spinner.removeChild(spinner.childNodes[0]);
+        var loading = this.$refs.loading;
+        loading.parentNode.removeAttribute('style');
+        loading.parentNode.removeChild(loading);
       },
       reset () {
-        let appId = this.appId;
-        setTimeout(function(){
-          FB.init({
-              appId     : appId,
-              xfbml     : true,
-              cookie    : true,
-              version   : 'v2.12'
-            });
-        }, 100)
+        window.FB.XFBML.parse();
       },
-
       init () {
         let src = `https://connect.facebook.net/${this.lang}/sdk.js`;
         let appId = this.appId
@@ -92,6 +86,20 @@
               version   : 'v2.12'
             });
             FB.Event.subscribe('xfbml.render', elem.finished_rendering);
+            
+            FB.getLoginStatus(function(res){
+              if(res.status === 'connected'){
+                  var signedRequest = res.authResponse.signedRequest;
+                  var data = signedRequest.split('.')[1];
+                  data = JSON.parse(decode_base64(data));
+                  console.log(res + 'from connected');
+                  console.log(data);
+                }else if(res.status === 'not_authorized'){
+                  console.log(res + 'from not authorized');
+                }else{
+                  console.log('indeterminate');
+                }
+            });
           };
 
           ;(function(d, s, id){
@@ -101,7 +109,7 @@
             js.src = src;
             fjs.parentNode.insertBefore(js, fjs);
           }(document, 'script', 'facebook-jssdk'));
-        }, 200);
+        },50);
       }
     }
   }

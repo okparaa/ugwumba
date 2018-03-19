@@ -2,7 +2,7 @@ import axios from 'axios';
 //import localforage from 'localforage';
 export const XHR = axios.create({
         token: null,
-        baseURL: `https://www.ugwumba.net`,
+        baseURL: `http://ugwumba.org`,
         'Content-Type': 'text/plain',
     });
     
