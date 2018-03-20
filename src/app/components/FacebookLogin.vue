@@ -1,11 +1,12 @@
 <template>
     <div id="spinner" style="background: #4267b2;border-radius: 5px;color: white; height: 40px; text-align: center; width: 100%;">
       <i ref="loading" class="pt-1 fa fa-spinner fa-spin fa-2x fa-fw"></i>   
-      <div class="fb-login-button" scope="publish_actions, email" onlogin="checkLoginState" :data-width="width" :data-max-rows="rows" :data-size="size" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
+      <div class="fb-login-button" scope="public_profile, publish_actions, email" onlogin="checkLoginStatus()" :data-width="width" :data-max-rows="rows" :data-size="size" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
     </div>
 </template>
 
 <script>
+import config from '@/lib/config';
   export default {
     name: 'VueFacebookComments',
     props: {
@@ -51,7 +52,8 @@
         FB.Event.subscribe('xfbml.render', this.finished_rendering);
         return;
       }
-      this.init()
+      this.init();
+      window.checkLoginState = this.checkLoginState;
     },
 
     computed: {
@@ -62,7 +64,23 @@
 
     methods: {
       checkLoginState(){
-
+        console.log(config.fbkUrl);
+        FB.getLoginStatus(function(res){
+          if(res.status === 'connected'){
+              var signedRequest = res.authResponse.signedRequest;
+              var data = signedRequest.split('.')[1];
+              data = JSON.parse(decode_base64(data));
+              console.log(res + 'from connected');
+              console.log(data);
+              window.location .href = encodeURI(config.url);
+            }else if(res.status === 'not_authorized'){
+              console.log(res + 'from not authorized');
+              window.location.href = config.fbkUrl;
+            }else{
+              window.location.href = config.fbkUrl;
+              console.log('indeterminate');
+            }
+        });
       },
       finished_rendering(){
         console.log("finished rendering plugins");
@@ -86,20 +104,6 @@
               version   : 'v2.12'
             });
             FB.Event.subscribe('xfbml.render', elem.finished_rendering);
-            
-            FB.getLoginStatus(function(res){
-              if(res.status === 'connected'){
-                  var signedRequest = res.authResponse.signedRequest;
-                  var data = signedRequest.split('.')[1];
-                  data = JSON.parse(decode_base64(data));
-                  console.log(res + 'from connected');
-                  console.log(data);
-                }else if(res.status === 'not_authorized'){
-                  console.log(res + 'from not authorized');
-                }else{
-                  console.log('indeterminate');
-                }
-            });
           };
 
           ;(function(d, s, id){
@@ -109,7 +113,7 @@
             js.src = src;
             fjs.parentNode.insertBefore(js, fjs);
           }(document, 'script', 'facebook-jssdk'));
-        },50);
+        },0);
       }
     }
   }

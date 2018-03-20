@@ -1,8 +1,9 @@
 import axios from 'axios';
+import config from '@/lib/config';
 //import localforage from 'localforage';
 export const XHR = axios.create({
         token: null,
-        baseURL: `http://ugwumba.org`,
+        baseURL: config.url,
         'Content-Type': 'text/plain',
     });
     

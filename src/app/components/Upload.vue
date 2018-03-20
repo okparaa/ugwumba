@@ -16,6 +16,7 @@ import { mapActions } from 'vuex';
 import loadImage from 'blueimp-load-image';
 import * as lib from '@/lib/http';
 import { logout } from '../../lib/Auth';
+import config from '@/lib/config';
 export default {
     props: ['clearEditor'],
     data(){
@@ -55,7 +56,7 @@ export default {
                 var imgNm = item.name;
                 var imagid = imgNm.split('-')[0];
                 this.$emit('addImages', imagid);
-                imag.setAttribute('src', 'http://ugwumba.org/uploads/' + imgNm);
+                imag.setAttribute('src', config.url + '/uploads/' + imgNm);
                 wrap.appendChild(imag);
             });
         }).catch(err => {
@@ -168,7 +169,7 @@ export default {
                             var imgNm = res.data.filename;
                             var imagid = imgNm.substr(imgNm.lastIndexOf('/')+1).split('-')[0];
                             elem.$emit('addImages', imagid);
-                            imag.setAttribute('src', 'http://ugwumba.org/'+res.data.filename);
+                            imag.setAttribute('src', config.url + '/' +res.data.filename);
                             wrap.appendChild(imag);
                         }else{
                             for(var k in res.data){

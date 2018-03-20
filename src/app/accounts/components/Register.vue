@@ -1,6 +1,16 @@
 <template>
 <div class="row justify-content-md-center" v-cloak>
-  <div class="col-lg-5 col-md-6 col-sm-8 register">
+  <div class="col-lg-5 col-md-6 col-sm-8 register contain-loader">
+    <div class="loading" v-if="loading">
+        <div class="spinner">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+            <div class="bounce3"></div>
+        </div>
+    </div>
+    <div v-if="error" class="error">
+      {{ error }}
+    </div>
    <form v-if="controls" class="user-form ml-4">
       <div v-for="(control, key) in controls" :key="key" class="form-group">
         <span v-if="control.type != 'File'" >
@@ -52,7 +62,9 @@ export default {
       isCropping: false,
       cropRatio: 9/9,
       gender: null,
-      marital: null
+      marital: null,
+      loading: false,
+      error: false
     };
   },
   watch: {
@@ -73,11 +85,13 @@ export default {
             control.value = value;        
         },
         fetchForm(){
-            this.getForm({url: '/accounts/register'}).then(resp =>{
-                this.controls = sortObjects(resp.data, 'order');
+            let vm = this;
+            vm.loading = true;
+            this.getForm({url: '/accounts/register'}).then(res =>{
+                this.controls = sortObjects(res.data, 'order');
+                vm.loading = false;
             }).catch(err => {
-                console.log('error occored: '+ err);
-                
+                vm.error = err;
             });
         },
         register: function(e){
@@ -201,7 +215,7 @@ export default {
                     elem.showBtn = true;                     
                 },
                 {
-                    maxHeight: 300,
+                    maxHeight: 200,
                     canvas: true,
                     pixelRatio: window.devicePixelRatio,
                     downsamplingRatio: 0.3,
@@ -219,11 +233,10 @@ export default {
 
 <style lang='scss'>
 .form-control {
-    display: block;
-    width: auto;
-    border: 1px solid #c2afaf;
-    border-radius: 0;
-    padding: 0.375rem 0.75rem;
+    width: auto !important;
+    border: 1px solid #c2afaf !important;
+    border-radius: 0 !important;
+    padding: 0.375rem 0.75rem !important;
 }
 
 .form-group {
@@ -238,7 +251,7 @@ export default {
 
 #prevew{
     height: auto;
-    width: 150px;
+    width: 200px;
     border-radius: 50%;
 }
 button{
@@ -305,5 +318,47 @@ button{
     position: absolute;
     z-index: 4;
     top: 0;
+}
+
+.spinner {
+  margin: 100px auto 0;
+  width: 70px;
+  text-align: center;
+}
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: #333;
+
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% { 
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 40% { 
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
 }
 </style>
