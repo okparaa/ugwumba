@@ -1,19 +1,19 @@
 <template>
   <div id="app" v-cloak>
-    <navigation v-if="displayFooter"></navigation>
-    <div :class="container">
-        <keep-alive>
-            <router-view></router-view>
-        </keep-alive>
-    </div>
-    <xfooter v-if="displayFooter"></xfooter>
+        <navigation v-if="displayFooter"></navigation>
+        <div :class="container">
+            <loading v-if="loader"></loading>
+            <router-view v-else></router-view>
+        </div>
+        <xfooter v-if="displayFooter"></xfooter>
   </div>
 </template>
 
 <script>
-import { Navigation } from "./navigation/components";
-import { Footer } from "./components";
+const Navigation = () => import("./navigation/components/Navigation");
+const Footer = () => import("./components/Footer");
 import { mapState } from 'vuex';
+import Loading from './components/Loading';
 export default {
   name: "app",
   data(){
@@ -22,9 +22,13 @@ export default {
   },
   components: {
     'navigation': Navigation,
-    'xfooter': Footer
+    'xfooter': Footer,
+    'loading': Loading
   },
   computed: {
+    loader(){
+        return this.$store.state.accounts.accounts.loading;
+    },
     container(){
       if(this.$route.name == 'xhome'){
         return "x-home";

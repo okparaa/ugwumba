@@ -1,4 +1,5 @@
-export const moment = function(date, format, utc){
+export default {
+     formatDate(date, format, utc){
         var MMMM = ["\x00", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         var MMM = ["\x01", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         var dddd = ["\x02", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -74,4 +75,5 @@ export const moment = function(date, format, utc){
         format = format.replace(/\\(.)/g, "$1");
         
         return format;
-    };
+    }
+}

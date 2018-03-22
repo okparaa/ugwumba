@@ -5,5 +5,8 @@ export default {
     },
     getForm({state, commit}, payload){
         return lib.XHR.get(payload.url);
+    },
+    sendSignedRequest({state, commit}, payload){
+        return lib.XHR.post(payload.url, payload.data);
     }
 }

@@ -25,8 +25,8 @@
 <script>
 import { mapActions, mapState } from "vuex";
 import Menu from './Menu';
-import { moment } from '../../../lib/moment';
-import  * as Auth  from '@/lib/Auth';
+import moment from '@/lib/moment';
+import  Auth  from '@/lib/Auth';
 export default {
   name: "navigation",
   data(){
@@ -45,7 +45,7 @@ export default {
   },
   computed: {
     today(){
-      return  moment((new Date()), 'dddd, MMMM d, yyyy d:mmtt', 'GMT');
+      return  moment.formatDate((new Date()), 'dddd, MMMM d, yyyy d:mmtt', 'GMT');
     },
   },
   components:{

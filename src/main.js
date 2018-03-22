@@ -5,8 +5,15 @@ import { App } from './app';
 import router from './router';
 import store from './store';
 import VueLazyload from 'vue-lazyload';
-
 Vue.use(VueLazyload)
+router.beforeEach((to, from, next) => {
+  store.commit('accounts/IS_LOADING', true);
+  next();
+});
+
+router.afterEach((to, from) => {
+  store.commit('accounts/IS_LOADING', false);
+});
 
 new Vue({
   el: '#app',

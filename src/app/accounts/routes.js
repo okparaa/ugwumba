@@ -1,4 +1,4 @@
-import Register from '../accounts/components/Register';
+const Register = () => import('../accounts/components/Register');
 export default [
   {
     path: '/accounts/register',

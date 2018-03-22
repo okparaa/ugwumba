@@ -1,6 +1,7 @@
-export {default as Card } from './Card';
-export {default as XCard } from './XCard';
-export {default as Carousel } from './Carousel';
-export {default as Gallery } from './Gallery';
-export {default as Footer } from './Footer';
-export {default as FacebookLogin } from './FacebookLogin';
+import facebookLogin from './facebook-login.vue'
+export const facebookLoginPlugin = {
+  install: function (Vue, options) {
+    Vue.component(facebookLogin.name, facebookLogin)
+  }
+}
+export default facebookLogin

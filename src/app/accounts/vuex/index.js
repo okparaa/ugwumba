@@ -2,7 +2,9 @@ import actions from './actions';
 import getters from './getters';
 import mutations from './mutations';
 const state = {
-  accounts: {}
+  accounts: {
+    loading: false
+  }
 };
 
 export default {

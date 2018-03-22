@@ -1,20 +1,23 @@
 <template>
-    <div id="spinner" style="background: #4267b2;border-radius: 5px;color: white; height: 40px; text-align: center; width: 100%;">
-      <i ref="loading" class="pt-1 fa fa-spinner fa-spin fa-2x fa-fw"></i>   
-      <div class="fb-login-button" scope="public_profile, publish_actions, email" onlogin="checkLoginState()" :data-width="width" :data-max-rows="rows" :data-size="size" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
-    </div>
+    <div>
+    <button @click="buttonClicked">
+      <div class="spinner" v-if="isWorking"></div>
+      <img :src="icon" v-if="!isWorking"> {{getButtonText}} 
+    </button>
+  </div>
 </template>
 
 <script>
-const config = () => import('@/lib/config');
+import config from '@/lib/config';
+import Cookie from 'js-cookie';
+import { mapActions } from 'vuex';
   export default {
-    name: 'VueFacebookComments',
+    name: 'fbk',
     props: {
       appId: {
         type: [Number, String],
         required: true
       },
-
       lang: {
         type: String,
         default: 'en_US'
@@ -53,7 +56,7 @@ const config = () => import('@/lib/config');
         return;
       }
       this.init();
-      window.checkLoginState = this.checkLoginState();
+      window.checkLoginState = this.checkLoginState;
     },
 
     computed: {
@@ -61,29 +64,37 @@ const config = () => import('@/lib/config');
         return (this.url || window.location.href)
       }
     },
-
     methods: {
-      checkLoginState(){
-        console.log(config.fbkUrl);
+      ...mapActions({
+        sendSignedRequest: 'accounts/sendSignedRequest'
+      }),
+      checkLoginState() {
         FB.getLoginStatus(function(res){
           if(res.status === 'connected'){
               var signedRequest = res.authResponse.signedRequest;
-              var data = signedRequest.split('.')[1];
-              data = JSON.parse(decode_base64(data));
-              console.log(res + 'from connected');
-              console.log(data);
-              window.location .href = encodeURI(config.url);
-            }else if(res.status === 'not_authorized'){
-              console.log(res + 'from not authorized');
-              window.location.href = config.fbkUrl;
+              vm.authenticate(signedRequest);
             }else{
               window.location.href = config.fbkUrl;
-              console.log('indeterminate');
             }
         });
       },
+      authenticate(signedRequest){
+        let vm = this;
+        console.log('this is inside authentication');
+        this.sendSignedRequest({url: 'accounts/sr', data: signedRequest})
+        .then(res => {
+          if(res.data.message == 'success'){
+            Auth.setToken(res.data.token);
+            Auth.setItem('passport', res.data.passport);
+            Auth.setItem('email', res.data.email);
+            vm.$router.push('/accounts/register');
+          }
+        })
+        .catch(err => {
+          console.log(err);          
+        });
+      },
       finished_rendering(){
-        console.log("finished rendering plugins");
         var loading = this.$refs.loading;
         loading.parentNode.removeAttribute('style');
         loading.parentNode.removeChild(loading);
@@ -94,18 +105,18 @@ const config = () => import('@/lib/config');
       init () {
         let src = `https://connect.facebook.net/${this.lang}/sdk.js`;
         let appId = this.appId
-        let elem = this;
+        let vm = this;
         setTimeout(function() {
           window.fbAsyncInit = function() {
             FB.init({
               appId     : appId,
               xfbml     : true,
               cookie    : true,
+              status    : true,
               version   : 'v2.12'
             });
-            FB.Event.subscribe('xfbml.render', elem.finished_rendering);
+            FB.Event.subscribe('xfbml.render', vm.finished_rendering);
           };
-
           ;(function(d, s, id){
             var js, fjs = d.getElementsByTagName(s)[0];
             if (d.getElementById(id)) {return;}
@@ -113,7 +124,7 @@ const config = () => import('@/lib/config');
             js.src = src;
             fjs.parentNode.insertBefore(js, fjs);
           }(document, 'script', 'facebook-jssdk'));
-        },0);
+        },10);
       }
     }
   }

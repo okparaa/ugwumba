@@ -1,13 +1,7 @@
 <template>
 <div class="row justify-content-md-center" v-cloak>
   <div class="col-lg-5 col-md-6 col-sm-8 register contain-loader">
-    <div class="loading" v-if="loading">
-        <div class="spinner">
-            <div class="bounce1"></div>
-            <div class="bounce2"></div>
-            <div class="bounce3"></div>
-        </div>
-    </div>
+    <loading v-if="loading"></loading>
     <div v-if="error" class="error">
       {{ error }}
     </div>
@@ -46,9 +40,9 @@
 import loadImage from 'blueimp-load-image';
 import Croppr from 'croppr';
 import { mapState, mapActions } from 'vuex';
-import { sortObjects } from '../../../utils';
-import * as Auth from '@/lib/Auth';
-
+import utils from '@/lib/utils';
+import Auth from '@/lib/Auth';
+import Loading from '../../components/Loading';
 export default {
   name: 'register',
   data () {
@@ -72,8 +66,8 @@ export default {
   created() {
       this.fetchForm();     
   },
-  mounted(){
-
+  components:{
+      'loading': Loading
   },
   methods: {
         ...mapActions({
@@ -91,8 +85,8 @@ export default {
             let vm = this;
             vm.loading = true;
             this.getForm({url: '/accounts/register'}).then(res =>{
-                this.controls = sortObjects(res.data, 'order');              
-                this.controlsCloned = sortObjects(res.data, 'order');              
+                this.controls = utils.sortObjects(res.data, 'order');              
+                this.controlsCloned = utils.sortObjects(res.data, 'order');              
                 vm.loading = false;
             }).catch(err => {
                 vm.error = err;
@@ -102,7 +96,9 @@ export default {
           let data = {};
           let vm = this;
           let button = document.getElementById('register');
-          button.insertAdjacentHTML('beforebegin', '<i class="fa fa-refresh fa-spin" id="fa-register"></i>');
+          let i = document.createElement('i');
+          
+          button.insertBefore('<i class="fa fa-refresh fa-spin" id="fa-register"></i>');
           let keys = Object.keys(this.controls); 
           keys.forEach(key => {
             data[key] = this.controls[key].value || '';
@@ -342,46 +338,5 @@ button{
 }
 .error{
    color: rgb(134, 10, 10) !important;
-}
-.spinner {
-  margin: 100px auto 0;
-  width: 70px;
-  text-align: center;
-}
-
-.spinner > div {
-  width: 18px;
-  height: 18px;
-  background-color: #333;
-
-  border-radius: 100%;
-  display: inline-block;
-  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
-  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
-}
-
-.spinner .bounce1 {
-  -webkit-animation-delay: -0.32s;
-  animation-delay: -0.32s;
-}
-
-.spinner .bounce2 {
-  -webkit-animation-delay: -0.16s;
-  animation-delay: -0.16s;
-}
-
-@-webkit-keyframes sk-bouncedelay {
-  0%, 80%, 100% { -webkit-transform: scale(0) }
-  40% { -webkit-transform: scale(1.0) }
-}
-
-@keyframes sk-bouncedelay {
-  0%, 80%, 100% { 
-    -webkit-transform: scale(0);
-    transform: scale(0);
-  } 40% { 
-    -webkit-transform: scale(1.0);
-    transform: scale(1.0);
-  }
 }
 </style>

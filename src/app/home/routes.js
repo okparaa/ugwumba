@@ -1,4 +1,4 @@
-import XHome from '../home/components/XHome';
+const XHome = () => import('../home/components/XHome');
 export default [
   {
     path: '/',

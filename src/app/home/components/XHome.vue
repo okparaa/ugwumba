@@ -21,11 +21,11 @@
 </template>
 
 <script>
-import { Menu } from '../../navigation/components';
-import { FacebookLogin } from '../../components';
+const Menu = () => import('../../navigation/components/Menu');
+const FacebookLogin = () => import('../../components/FacebookLogin');
 import { mapActions } from 'vuex';
-import * as Auth from '../../../lib/Auth';
-import { guid } from '@/lib/guid';
+import Auth from '@/lib/Auth';
+import utils from '@/lib/utils';
 export default {
   name: 'xhome',
   data() {
@@ -53,7 +53,7 @@ export default {
      'facebook-login': FacebookLogin
   },
   created(){
-    this.username = guid();
+    this.username = utils.guid();
   },
   methods: {
       ...mapActions({
