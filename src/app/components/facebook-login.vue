@@ -1,12 +1,8 @@
 <template>
-  <div class="container">
-    <button @click="buttonClicked">
-      <div class="spinner"
-        v-if="isWorking"> </div>
-      <img :src="icon"
-        v-if="!isWorking"> {{getButtonText}}
-    </button>
-  </div>
+<div @click="buttonClicked" id="spinner" style="font-size: 18px; font-weight: bold; cursor: pointer; padding-top: 5px; background: #4267b2;border-radius: 5px;color: white; height: 40px; text-align: center; width: 100%;">
+  <i class="fa fa-facebook"></i>  <div class="fa fa-spin fa-spinner" v-if="isWorking"> </div> {{getButtonText}}
+  <div class="text-center mb-1 mt-1 text-bold">OR</div>
+</div>
 </template>
 <script>
 import { loadFbSdk, getLoginStatus, fbLogout, fbLogin } from './helpers.js'
@@ -75,7 +71,7 @@ export default {
     },
     version: {
       type: String,
-      default: 'v2.10'
+      default: 'v2.12'
     },
     logoutLabel: {
       type: String,
@@ -95,9 +91,10 @@ export default {
     }
   },
   mounted() {
-    this.isWorking = true;
+    //this.isWorking = true;
     loadFbSdk(this.appId, this.version)
       .then(loadingResult => {
+        console.log(loadingResult)
       })
       .then(() => getLoginStatus())
       .then(response => {

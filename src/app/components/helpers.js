@@ -1,6 +1,7 @@
 /* global window, FB, document */
 
 export function loadFbSdk(appId, version) {
+  let src = `https://connect.facebook.net/en_US/sdk.js`;
   return new Promise(resolve => {
     window.fbAsyncInit = function () { // eslint-disable-line func-names
       FB.init({
@@ -12,11 +13,11 @@ export function loadFbSdk(appId, version) {
       FB.AppEvents.logPageView();
       resolve('SDK Loaded!');
     };
-    (function (d, s, id) { // eslint-disable-line func-names
-      const fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) { return; }
-      const js = d.createElement(s); js.id = id;
-      js.src = '//connect.facebook.net/en_US/sdk.js';
+    ;(function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = src;
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
   });

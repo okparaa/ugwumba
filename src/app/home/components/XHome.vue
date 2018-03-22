@@ -3,8 +3,8 @@
   <div id="home">
     <div class="landing">
       <div id="login"  v-if="!loggedIn">
-        <facebook-login :appId="394530471010474" class="text-center"></facebook-login>
-        <div class="text-center mb-1 mt-1">OR</div>
+        <!-- <facebook-login :appId="394530471010474" class="text-center"></facebook-login> -->
+        <facebook-login class="button mb-2" appId="394530471010474" @login="onLogin" @logout="onLogout" @sdk-loaded="sdkLoaded"></facebook-login>
          <form>
            <p>Username</p>
            <input type="text" v-model="controls.username" :name="username" id="username" placeholder="Enter Username">
@@ -22,7 +22,7 @@
 
 <script>
 const Menu = () => import('../../navigation/components/Menu');
-const FacebookLogin = () => import('../../components/FacebookLogin');
+const FacebookLogin = () => import('../../components/facebook-login');
 import { mapActions } from 'vuex';
 import Auth from '@/lib/Auth';
 import utils from '@/lib/utils';
@@ -43,6 +43,11 @@ export default {
         username: null,
         password: null
       },
+      isConnected: false,
+      name: '',
+      email: '',
+      personalID: '',
+      FB: undefined
     };
   },
   computed: {
@@ -83,6 +88,28 @@ export default {
         console.log(err);    
       }); 
      },
+     getUserData() {
+      this.FB.api('/me', 'GET', { fields: 'id,name,email' },
+        userInformation => {
+          console.log(userInformation);
+          this.personalID = userInformation.id;
+          this.email = userInformation.email;
+          this.name = userInformation.name;
+        }
+      )
+    },
+    sdkLoaded(payload) {
+      this.isConnected = payload.isConnected
+      this.FB = payload.FB
+      if (this.isConnected) this.getUserData()
+    },
+    onLogin() {
+      this.isConnected = true;
+      this.getUserData()
+    },
+    onLogout() {
+      this.isConnected = false;
+    }
    }
 };
 </script>
@@ -167,4 +194,22 @@ export default {
       color: #39dc79;
     }
   }
+.login {
+  width: 200px;
+  margin: auto;
+}
+
+.list-item:first-child {
+  margin: 0;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.button {
+  margin: auto;
+}
 </style>
