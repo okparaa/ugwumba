@@ -117,22 +117,4 @@ export default {
       padding: 0;
       width: 100%;
   }
-  .top-nav li a {
-      color: #137439;
-      font-size: 14px;
-      font-weight: 700;
-      padding: 0 10px;
-      margin: 10px 5px;
-      text-transform: uppercase;
-      border-left: 1px solid #2b2b2b;
-  }
-  .top-nav li {
-      border-bottom: 2px solid transparent;
-      color: #141517;
-      margin: 0 5px;
-  }
-  .top-nav li.nav-item:hover, .top-nav li.nav-item:focus, .top-nav li.active {
-      border-bottom: 2px solid #fd3a13;
-      color: #141517;
-  }
 </style>

@@ -18,6 +18,7 @@ export const sortObjects = (objects, key, reverse = false) => {
   });
   let sortedObjects = {};
   sortedKeys.forEach(key => {
+    objects[key].value = '';  
     sortedObjects[key] = objects[key];
   });
   return sortedObjects;

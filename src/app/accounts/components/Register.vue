@@ -11,13 +11,11 @@
     <div v-if="error" class="error">
       {{ error }}
     </div>
-   <form v-if="controls" class="user-form ml-4">
+    <form v-if="controls" class="user-form ml-4">
       <div v-for="(control, key) in controls" :key="key" class="form-group">
         <span v-if="control.type != 'File'" >
             <span v-if="!isCropping">
-                <input v-if="control.type == 'Text'" v-model="controls[key].value" :type="control.type" :size="control.attributes.size" :class="control.attributes.class" :id="control.attributes.id" :placeholder="control.attributes.placeholder">
-                <input v-if="control.type == 'Password'" v-model="controls[key].value" :type="control.type" :size="control.attributes.size" :class="control.attributes.class" :id="control.attributes.id" :placeholder="control.attributes.placeholder">
-                <input v-if="control.type == 'Email'" v-model="controls[key].value" :type="control.type" :size="control.attributes.size" :class="control.attributes.class" :id="control.attributes.id" :placeholder="control.attributes.placeholder">
+                <input v-if="control.type !== 'Radio'" @focus="updateControl(control)" v-model="controls[key].value" :type="control.type" :size="control.attributes.size" :class="control.attributes.class" :id="control.attributes.id" :placeholder="control.attributes.placeholder">
                 <select v-if="control.type == 'Select'" :class="control.attributes.class">
                     <option v-for="(options, key) in control.options.value_options" :key="key" >{{options[key]}}</option>
                 </select>
@@ -26,19 +24,19 @@
                         <input @click="checker(control, opt.value)" :name="control.name" type="radio" :value="controls[key].options[index].value" :class="control.attributes.class"> <label style="padding-right: 6px;">{{opt.name}}</label>
                     </span>
                 </span>
-                <small class="form-text text-muted">{{control.hint}}</small>
+                <small :class="control.attributes.hintclass">{{control.hint}}</small>
             </span>
         </span>
         <span v-else>
-            <input @change="selectImage" :id="control.id" :type="control.type" :size="control.attributes.size" :class="control.attributes.class" :placeholder="control.attributes.placeholder">
-            <small class="form-text text-muted">{{control.hint}}</small>
+            <input @change="selectImage" :id="control.id" :type="control.type" :size="control.attributes.size" class="form-control" :placeholder="control.attributes.placeholder">
+            <small :class="control.attributes.hintclass">{{control.hint}}</small>
             <span id="passview">
                 <button class="btn btn-sm btn-success active" @click="cropImage" v-if="showBtn" style="display: inline;">crop image</button>
                 <button class="btn btn-sm btn-danger " @click="cancelCrop" v-if="showBtn" style="display: inline;">cancel</button>
 	        </span>
         </span>
       </div>
-      <button v-if="!isCropping" @click.prevent="register" type="submit" class="btn btn-success">Submit</button>
+      <button v-if="!isCropping" @click.prevent="register" type="submit" class="btn btn-success" id="register">Submit</button>
     </form>
   </div>
 </div>
@@ -64,7 +62,8 @@ export default {
       gender: null,
       marital: null,
       loading: false,
-      error: false
+      error: false,
+      controlsCloned: null,
     };
   },
   watch: {
@@ -73,7 +72,7 @@ export default {
   created() {
       this.fetchForm();     
   },
-  watch: {
+  mounted(){
 
   },
   methods: {
@@ -81,6 +80,10 @@ export default {
           createAccount: 'accounts/createAccount',
           getForm: 'accounts/getForm'
         }),
+        updateControl(control){
+           control.attributes.class = "form-control";
+           control.attributes.hintclass = "form-text text-muted";
+        },
         checker(control, value){
             control.value = value;        
         },
@@ -88,7 +91,8 @@ export default {
             let vm = this;
             vm.loading = true;
             this.getForm({url: '/accounts/register'}).then(res =>{
-                this.controls = sortObjects(res.data, 'order');
+                this.controls = sortObjects(res.data, 'order');              
+                this.controlsCloned = sortObjects(res.data, 'order');              
                 vm.loading = false;
             }).catch(err => {
                 vm.error = err;
@@ -96,7 +100,10 @@ export default {
         },
         register: function(e){
           let data = {};
-          let keys = Object.keys(this.controls);          
+          let vm = this;
+          let button = document.getElementById('register');
+          button.insertAdjacentHTML('beforebegin', '<i class="fa fa-refresh fa-spin" id="fa-register"></i>');
+          let keys = Object.keys(this.controls); 
           keys.forEach(key => {
             data[key] = this.controls[key].value || '';
           });
@@ -106,8 +113,19 @@ export default {
                   Auth.setToken(res.data.token);
                   Auth.setPassport(res.data.passport);
                   this.$router.push('/posts/create');
+              }else{
+                for(var key in vm.controls){
+                    if(res.data[key] !== undefined){
+                        Object.keys(res.data[key]).forEach(ky => {
+                            vm.controls[key].hint = res.data[key][ky];
+                            if(vm.controls[key].type !== 'Radio'){
+                                vm.controls[key].attributes.class = "form-control input-error";
+                            }
+                            vm.controls[key].attributes.hintclass = "form-text text-muted error"
+                        });
+                    }                   
+                }
               }
-              //console.log(resp.data); 
           })
           .catch(err => {
               console.log(err);              
@@ -251,7 +269,7 @@ export default {
 
 #prevew{
     height: auto;
-    width: 200px;
+    width: 100px;
     border-radius: 50%;
 }
 button{
@@ -319,7 +337,12 @@ button{
     z-index: 4;
     top: 0;
 }
-
+.input-error {
+    border: thin solid rgb(134, 10, 10) !important;
+}
+.error{
+   color: rgb(134, 10, 10) !important;
+}
 .spinner {
   margin: 100px auto 0;
   width: 70px;

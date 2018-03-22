@@ -70,8 +70,8 @@ export default {
        Auth.login({data: this.controls, url: 'accounts/login'})
        .then(res => {
          if(res.data.token){  
-            localStorage.setItem('token', res.data.token);          
-            localStorage.setItem('passport', res.data.passport);          
+            Auth.setToken(res.data.token);          
+            Auth.setPassport(res.data.passport);          
           }
           if(res.data.message == 'success'){
             this.controls.username = null;
@@ -121,24 +121,6 @@ export default {
     border-bottom: none !important;
     padding: 0;
     width: 100%;
-  }
-  .top-nav li a {
-      color: #137439;
-      font-size: 14px;
-      font-weight: 700;
-      padding: 0 10px;
-      margin: 10px 5px;
-      text-transform: uppercase;
-      border-left: 1px solid #2b2b2b;
-  }
-  .top-nav li {
-      border-bottom: 2px solid transparent;
-      color: #141517;
-      margin: 0 5px;
-  }
-  .top-nav li.nav-item:hover, .top-nav li.nav-item:focus, .top-nav li.active {
-      border-bottom: 2px solid #fd3a13;
-      color: #141517;
   }
   h1{
     margin: 0;

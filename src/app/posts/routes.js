@@ -1,9 +1,8 @@
-import * as components from './components';
-
+import Posts from '../posts/components/Posts';
 export default [
   {
     path: '/posts/create',
-    component: components.Posts,
+    component: Posts,
     name: 'createPost'
   }
 ];

@@ -1,12 +1,12 @@
 <template>
     <div id="spinner" style="background: #4267b2;border-radius: 5px;color: white; height: 40px; text-align: center; width: 100%;">
       <i ref="loading" class="pt-1 fa fa-spinner fa-spin fa-2x fa-fw"></i>   
-      <div class="fb-login-button" scope="public_profile, publish_actions, email" onlogin="checkLoginStatus()" :data-width="width" :data-max-rows="rows" :data-size="size" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
+      <div class="fb-login-button" scope="public_profile, publish_actions, email" onlogin="checkLoginState()" :data-width="width" :data-max-rows="rows" :data-size="size" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
     </div>
 </template>
 
 <script>
-import config from '@/lib/config';
+const config = () => import('@/lib/config');
   export default {
     name: 'VueFacebookComments',
     props: {
@@ -53,7 +53,7 @@ import config from '@/lib/config';
         return;
       }
       this.init();
-      window.checkLoginState = this.checkLoginState;
+      window.checkLoginState = this.checkLoginState();
     },
 
     computed: {

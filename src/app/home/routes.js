@@ -1,9 +1,8 @@
-import * as components from './components';
-
+import XHome from '../home/components/XHome';
 export default [
   {
     path: '/',
-    component: components.XHome,
+    component: XHome,
     name: 'xhome'
   },
 ];

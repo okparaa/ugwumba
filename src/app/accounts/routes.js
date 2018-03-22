@@ -1,14 +1,13 @@
-import * as components from './components';
-
+import Register from '../accounts/components/Register';
 export default [
   {
     path: '/accounts/register',
-    component: components.Register,
+    component: Register,
     name: 'registerAccount'
   },
   {
     path: '/accounts/logout',
-    component: components.Register,
+    component: Register,
     name: 'logoutAccount'
   }
 ];

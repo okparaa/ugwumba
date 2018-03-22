@@ -1,6 +1,5 @@
-import localforage from 'localforage';
 import * as lib from './http';
-
+import Cookie from 'js-cookie';
 export const login = (payload) => { 
   return lib.XHR.post(payload.url, payload.data);   
 };
@@ -9,7 +8,10 @@ export const logout = () => {
   return false;
 };
 export const getToken = () => {
-    return window.localStorage.getItem('token');
+    return Cookie.get('token');
+};
+export const getPassport = () => {
+    return Cookie.get('passport');
 };
 export const isloggedIn = () => {
   if(getToken()){    
@@ -27,17 +29,17 @@ export const getUser = () => {
 };
 export const setToken = (token = null) => {
     if (token) {
-      window.localStorage.setItem('token', token);
+      Cookie.set('token', token);
     } else {
-      window.localStorage.removeItem('token');
-      window.localStorage.removeItem('passport');
+      Cookie.remove('token');
+      Cookie.remove('passport');
     }
 };
 
 export const setPassport = (passport = null) => {
   if (passport) {
-    window.localStorage.setItem('passport', passport);
+    Cookie.set('passport', passport);
   } else {
-    window.localStorage.removeItem('passport');
+    Cookie.remove('passport');
   }
 };

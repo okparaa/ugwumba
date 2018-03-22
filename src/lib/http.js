@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from '@/lib/config';
-//import localforage from 'localforage';
+import Cookie from 'js-cookie';
 export const XHR = axios.create({
         token: null,
         baseURL: config.url,
@@ -9,7 +9,7 @@ export const XHR = axios.create({
     
  XHR.interceptors.request.use(
     config => {
-      config.headers.authorization = window.localStorage.getItem("token");
+      config.headers.authorization = Cookie.get("token");
       return config;
     },
     error => Promise.reject(error)

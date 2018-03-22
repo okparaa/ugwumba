@@ -2,7 +2,9 @@
   <div id="app" v-cloak>
     <navigation v-if="displayFooter"></navigation>
     <div :class="container">
-      <router-view :key="$route.fullPath"></router-view>
+        <keep-alive>
+            <router-view></router-view>
+        </keep-alive>
     </div>
     <xfooter v-if="displayFooter"></xfooter>
   </div>
