@@ -16,8 +16,9 @@ export default {
 
 <style lang="scss">
 .spinner {
-    margin: 100px auto 0;
-    width: 70px;
+    position: absolute;
+    top: 48%;
+    left: 48%;
     text-align: center;
     }
 

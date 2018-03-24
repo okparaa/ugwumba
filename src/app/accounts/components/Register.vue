@@ -1,5 +1,5 @@
 <template>
-<div class="row justify-content-md-center" v-cloak>
+<div class="row justify-content-md-center" style="min-height: 100%" v-cloak>
   <div class="col-lg-5 col-md-6 col-sm-8 register contain-loader">
     <loading v-if="loading"></loading>
     <div v-if="error" class="error">
@@ -7,30 +7,28 @@
     </div>
     <form v-if="controls" class="user-form ml-4">
       <div v-for="(control, key) in controls" :key="key" class="form-group">
-        <span v-if="control.type != 'File'" >
+        <span v-if="control.type != 'File'">
             <span v-if="!isCropping">
                 <input v-if="control.type !== 'Radio'" @focus="updateControl(control)" v-model="controls[key].value" :type="control.type" :size="control.attributes.size" :class="control.attributes.class" :id="control.attributes.id" :placeholder="control.attributes.placeholder">
                 <select v-if="control.type == 'Select'" :class="control.attributes.class">
                     <option v-for="(options, key) in control.options.value_options" :key="key" >{{options[key]}}</option>
                 </select>
-                <span v-if="control.type == 'Radio'"> 
-                    <span v-for="(opt, index) in control.options" :key="index">
-                        <input @click="checker(control, opt.value)" :name="control.name" type="radio" :value="controls[key].options[index].value" :class="control.attributes.class"> <label style="padding-right: 6px;">{{opt.name}}</label>
-                    </span>
-                </span>
+                <span v-for="(opt, index) in control.options" :key="index" v-if="control.type.toLowerCase() == 'radio'">
+                    <input @click="checker(control, opt.value)" :name="control.name" type="radio" :value="controls[key].options[index].value" :class="control.attributes.class"> <label style="padding-right: 6px;">{{opt.name}}</label>
+                </span>                
                 <small :class="control.attributes.hintclass">{{control.hint}}</small>
             </span>
         </span>
         <span v-else>
-            <input @change="selectImage" :id="control.id" :type="control.type" :size="control.attributes.size" class="form-control" :placeholder="control.attributes.placeholder">
+            <input @change="selectImage" :id="control.id" :type="control.type" :size="control.attributes.size" class="file-input" :placeholder="control.attributes.placeholder">
             <small :class="control.attributes.hintclass">{{control.hint}}</small>
             <span id="passview">
-                <button class="btn btn-sm btn-success active" @click="cropImage" v-if="showBtn" style="display: inline;">crop image</button>
-                <button class="btn btn-sm btn-danger " @click="cancelCrop" v-if="showBtn" style="display: inline;">cancel</button>
-	        </span>
+                <button class="btn btn-sm btn-success active" @click.prevent="cropImage(control)" v-if="showBtn" style="display: inline;">crop image</button>
+                <button class="btn btn-sm btn-danger " @click.prevent="cancelCrop" v-if="showBtn" style="display: inline;">cancel</button>
+            </span>
         </span>
       </div>
-      <button v-if="!isCropping" @click.prevent="register" type="submit" class="btn btn-success" id="register">Submit</button>
+      <button v-if="!isCropping" @click.prevent="register" type="submit" class="btn btn-primary" id="register">Register</button>
     </form>
   </div>
 </div>
@@ -52,12 +50,11 @@ export default {
       showBtn: false,
       selectedBox: [],
       isCropping: false,
-      cropRatio: 9/9,
+      cropRatio: 1,
       gender: null,
       marital: null,
       loading: false,
       error: false,
-      controlsCloned: null,
     };
   },
   watch: {
@@ -77,16 +74,19 @@ export default {
         updateControl(control){
            control.attributes.class = "form-control";
            control.attributes.hintclass = "form-text text-muted";
+           if(control.info){
+               control.hint = control.info;
+           }
         },
         checker(control, value){
-            control.value = value;        
+            control.value = value; 
+            control.hint = null;       
         },
         fetchForm(){
             let vm = this;
             vm.loading = true;
             this.getForm({url: '/accounts/register'}).then(res =>{
                 this.controls = utils.sortObjects(res.data, 'order');              
-                this.controlsCloned = utils.sortObjects(res.data, 'order');              
                 vm.loading = false;
             }).catch(err => {
                 vm.error = err;
@@ -96,9 +96,13 @@ export default {
           let data = {};
           let vm = this;
           let button = document.getElementById('register');
+          if(utils.hasClass(button.firstChild, 'fa-spin')){
+              return;
+          }
           let i = document.createElement('i');
-          
-          button.insertBefore('<i class="fa fa-refresh fa-spin" id="fa-register"></i>');
+          let nfa = document.createElement('i');
+          utils.addClass(nfa, 'fa fa-refresh fa-spin magr');
+          button.insertBefore(nfa, button.firstChild);
           let keys = Object.keys(this.controls); 
           keys.forEach(key => {
             data[key] = this.controls[key].value || '';
@@ -110,11 +114,14 @@ export default {
                   Auth.setPassport(res.data.passport);
                   this.$router.push('/posts/create');
               }else{
+                let button = document.getElementById('register');
+                button.removeChild(button.firstChild);
                 for(var key in vm.controls){
                     if(res.data[key] !== undefined){
                         Object.keys(res.data[key]).forEach(ky => {
+                            vm.controls[key].info = vm.controls[key].hint;
                             vm.controls[key].hint = res.data[key][ky];
-                            if(vm.controls[key].type !== 'Radio'){
+                            if(vm.controls[key].type.toLowerCase() !== 'radio' && vm.controls[key].type.toLowerCase() !== 'file'){
                                 vm.controls[key].attributes.class = "form-control input-error";
                             }
                             vm.controls[key].attributes.hintclass = "form-text text-muted error"
@@ -156,26 +163,26 @@ export default {
                 });
             }
         },
-        cropImage(e){
-            e.preventDefault();
-            this.isCropping = false;
-            this.showBtn = false;
-            var image = this.$el.querySelector('.croppr-imageClipped');
+        cropImage(control){
+            if(control.info){
+                control.hint = control.info;
+            }
+            var image = this.$el.querySelector('.croppr-image');
             var tnCanvas = document.createElement('canvas');
+            var newWidth = this.selectedBox.width;
+            var newHeigth = this.selectedBox.height;
+            tnCanvas.width = newWidth;          
+            tnCanvas.height = newHeigth;
             var tnCtx = tnCanvas.getContext('2d');
-            var newWidth = this.selectedBox.x2 - this.selectedBox.x1;
-            var newHeigth = this.selectedBox.y2 - this.selectedBox.y1;
-            tnCanvas.width = (newWidth);          
-            tnCanvas.height = (newHeigth);
-            
             var bufferCanvas = document.createElement('canvas');
             var bufferCtx = bufferCanvas.getContext('2d');
-            bufferCanvas.width = image.width;
-            bufferCanvas.height = image.height;
+            
+            bufferCanvas.width = image.width + 1000;
+            bufferCanvas.height = image.height + 1000;
             bufferCtx.drawImage(image, 0, 0);
             tnCtx.drawImage(bufferCanvas, 
-                    this.selectedBox.x1, 
-                    this.selectedBox.y1,
+                    this.selectedBox.x, 
+                    this.selectedBox.y,
                     newWidth, newHeigth,
                     0, 0, newWidth, newHeigth);
             var prevew = document.createElement('img');
@@ -191,6 +198,8 @@ export default {
                     node.parentNode.removeChild( node );
                 });
             }
+            this.isCropping = false;
+            this.showBtn = false;
             passview.insertAdjacentElement('afterBegin', prevew);
         },
         selectImage: function(e){
@@ -198,7 +207,7 @@ export default {
             if(imgPrevew){
                 imgPrevew.parentNode.removeChild(imgPrevew);
             }            
-            var elem = this;
+            var vm = this;
             var prevew = document.createElement('img');
             prevew.id = 'prevew';
             var containa = this.$el.querySelectorAll('.croppr-container');
@@ -209,27 +218,26 @@ export default {
                     node.parentNode.removeChild( node );
                 });
             }
-                //console.log(containa.length);
+                //console.log(containa.length);     
             var loadingImage = loadImage(
                 e.target.files[0],
                 function (img) {
-                    console.log(img);
                     prevew.src = img.toDataURL("image/jpeg");  
                     prevew.style.display = 'block';
                     var croppr = new Croppr('#prevew', {
-                        aspectRatio: elem.cropRatio,
-                        onCropEnd: function(){
-                           elem.selectedBox = croppr.box;                            
+                        aspectRatio: vm.cropRatio,
+                        onCropEnd: function(data){
+                           vm.selectedBox = data;
                         },
-                        onInitialize: function(croppr){
-                            elem.selectedBox = croppr.box;                            
+                        onInitialize: function(instance){
+                            vm.selectedBox = instance.getValue();                            
                         }
                     });
-                    elem.isCropping = true;
-                    elem.showBtn = true;                     
+                    vm.isCropping = true;
+                    vm.showBtn = true;                     
                 },
                 {
-                    maxHeight: 200,
+                    maxHeight: 400,
                     canvas: true,
                     pixelRatio: window.devicePixelRatio,
                     downsamplingRatio: 0.3,
@@ -245,12 +253,21 @@ export default {
 };
 </script>
 
-<style lang='scss'>
+<style lang='scss' scoped>
+body{
+    line-height: 0.5 !important;
+}
 .form-control {
     width: auto !important;
     border: 1px solid #c2afaf !important;
     border-radius: 0 !important;
     padding: 0.375rem 0.75rem !important;
+    margin-bottom: 8px;
+    margin-top: 15px;
+}
+.marital, .gender, .file-input{
+    margin-bottom: 8px;
+    margin-top: 5px;
 }
 
 .form-group {
@@ -265,15 +282,26 @@ export default {
 
 #prevew{
     height: auto;
-    width: 100px;
+    width: 40%;
     border-radius: 50%;
+}
+#passview{
+    max-width: 400px !important;
+    display: block;
 }
 button{
     margin-top: 4px;
 }
+#register{
+    margin-top: 15px;
+    width: 100px;
+}
 .register{
     border-left: cadetblue solid thin;
     border-right: cadetblue solid thin;
+}
+.magr{
+    margin-right: 5px;
 }
 .croppr-container * {
     user-select: none;
@@ -337,6 +365,7 @@ button{
     border: thin solid rgb(134, 10, 10) !important;
 }
 .error{
-   color: rgb(134, 10, 10) !important;
+    color: rgb(134, 10, 10) !important;
+    font-weight: bold;
 }
 </style>

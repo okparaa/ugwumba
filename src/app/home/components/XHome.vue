@@ -3,8 +3,8 @@
   <div id="home">
     <div class="landing">
       <div id="login"  v-if="!loggedIn">
-        <!-- <facebook-login :appId="394530471010474" class="text-center"></facebook-login> -->
-        <facebook-login class="button mb-2" appId="394530471010474" @login="onLogin" @logout="onLogout" @sdk-loaded="sdkLoaded"></facebook-login>
+        <fb-login class="button mb-2" appId="394530471010474" @login="onLogin" @logout="onLogout" @sdk-loaded="sdkLoaded"></fb-login>
+         <p class="mb-4"></p>
          <form>
            <p>Username</p>
            <input type="text" v-model="controls.username" :name="username" id="username" placeholder="Enter Username">
@@ -22,7 +22,7 @@
 
 <script>
 const Menu = () => import('../../navigation/components/Menu');
-const FacebookLogin = () => import('../../components/facebook-login');
+const FbLogin = () => import('../../components/FbLogin');
 import { mapActions } from 'vuex';
 import Auth from '@/lib/Auth';
 import utils from '@/lib/utils';
@@ -43,10 +43,17 @@ export default {
         username: null,
         password: null
       },
+      fb_scopes: 'id,first_name, last_name, name, picture.width(150).height(150), gender, email',
       isConnected: false,
-      name: '',
-      email: '',
-      personalID: '',
+      profile: {
+        first_name: '',
+        last_name: '',
+        gender: '',
+        username: '',
+        uid: '',
+        passport: '',
+        access_token: '',
+      },
       FB: undefined
     };
   },
@@ -55,7 +62,7 @@ export default {
   },
   components: {
      'xmenu': Menu,
-     'facebook-login': FacebookLogin
+     'fb-login': FbLogin
   },
   created(){
     this.username = utils.guid();
@@ -70,13 +77,13 @@ export default {
         this.loggedIn = Auth.isloggedIn();
         return this.loggedIn;
       },
-     accountLogin(e){
+      accountLogin(e){
        e.preventDefault();
        Auth.login({data: this.controls, url: 'accounts/login'})
        .then(res => {
          if(res.data.token){  
             Auth.setToken(res.data.token);          
-            Auth.setPassport(res.data.passport);          
+            Auth.setItem('passport', res.data.passport);          
           }
           if(res.data.message == 'success'){
             this.controls.username = null;
@@ -88,26 +95,37 @@ export default {
         console.log(err);    
       }); 
      },
-     getUserData() {
-      this.FB.api('/me', 'GET', { fields: 'id,name,email' },
-        userInformation => {
-          console.log(userInformation);
-          this.personalID = userInformation.id;
-          this.email = userInformation.email;
-          this.name = userInformation.name;
-        }
-      )
+    fbRegister(data){
+      Auth.fbLogin({url: '/accounts/register', data: this.profile})
+      .then(res => {
+        this.$router.push('/accounts/register');
+      })
+      .catch(err => {
+        console.log(err);        
+      });
+    },
+    getUserData() {
+      window.FB.api('/me', 'GET', { fields: this.fb_scopes },
+        profile => {
+          this.profile.uid = profile.id;
+          this.profile.passport = profile.picture.data.url;
+          this.profile.first_name = profile.first_name;
+          this.profile.last_name = profile.last_name;
+          this.profile.username = profile.email;
+          this.profile.gender = profile.gender;
+          this.fbRegister(this.profile);
+      })
     },
     sdkLoaded(payload) {
       this.isConnected = payload.isConnected
-      this.FB = payload.FB
-      if (this.isConnected) this.getUserData()
+      this.FB = payload.FB;
     },
-    onLogin() {
+    onLogin(response) {
       this.isConnected = true;
-      this.getUserData()
+      this.profile.access_token = response.response.authResponse.accessToken;    
+      this.getUserData();
     },
-    onLogout() {
+    onLogout(response) {
       this.isConnected = false;
     }
    }

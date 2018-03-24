@@ -4,15 +4,15 @@ export default {
   login(payload){ 
     return lib.XHR.post(payload.url, payload.data);   
   },
+  fbLogin(payload){ 
+    return lib.XHR.post(payload.url, payload.data);   
+  },
   logout(){
     this.setToken(null);
     return false;
   },
   getToken(){
     return Cookie.get('token');
-  },
-  getPassport(){
-    return Cookie.get('passport');
   },
   isloggedIn() {
     if(this.getToken()){    
@@ -36,11 +36,11 @@ export default {
       Cookie.remove('passport');
     }
   },
-  setPassport(passport = null){
-    if (passport) {
-      Cookie.set('passport', passport);
+  removeItem(token = null){
+    if (token) {
+      Cookie.remove('token', token);
     } else {
-      Cookie.remove('passport');
+      Cookie.remove('token');
     }
   },
   setItem(name, value){

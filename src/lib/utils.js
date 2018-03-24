@@ -57,4 +57,13 @@ export default {
       el.className = classes.join(' ');
     }
   },
+  addClass(el, className){
+    if (el.classList){
+      className.split(' ').forEach(classN => {
+        el.classList.add(classN);
+      })
+    }else{
+      el.className += ' ' + className;
+    }
+  }
 }

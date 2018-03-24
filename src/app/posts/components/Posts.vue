@@ -111,7 +111,6 @@
   }
   @import '../../../../node_modules/quill/dist/quill.core.css';
   @import '../../../../node_modules/quill/dist/quill.snow.css';
-  //@import '../../../../node_modules/quill/dist/quill.bubble.css';
 div.row-quill {
     margin: auto;
     
