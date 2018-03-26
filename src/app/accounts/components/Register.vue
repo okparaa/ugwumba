@@ -1,6 +1,7 @@
 <template>
+<transition name="slide-fade">
 <div class="row justify-content-md-center" style="min-height: 100%" v-cloak>
-  <div class="col-lg-5 col-md-6 col-sm-8 register contain-loader">
+  <div class="col-lg-5 col-md-6 col-sm-8 register contain-loader" style="min-height: 400px;">
     <loading v-if="loading"></loading>
     <div v-if="error" class="error">
       {{ error }}
@@ -9,7 +10,9 @@
       <div v-for="(control, key) in controls" :key="key" class="form-group">
         <span v-if="control.type != 'File'">
             <span v-if="!isCropping">
-                <input v-if="control.type !== 'Radio'" @focus="updateControl(control)" v-model="controls[key].value" :type="control.type" :size="control.attributes.size" :class="control.attributes.class" :id="control.attributes.id" :placeholder="control.attributes.placeholder">
+                <div :style="{width: control.attributes.size + '%'}">
+                    <input v-if="control.type !== 'Radio'" @focus="updateControl(control)" v-model="controls[key].value" :type="control.type" :class="control.attributes.class" :id="control.attributes.id" :placeholder="control.attributes.placeholder">
+                </div>
                 <select v-if="control.type == 'Select'" :class="control.attributes.class">
                     <option v-for="(options, key) in control.options.value_options" :key="key" >{{options[key]}}</option>
                 </select>
@@ -32,6 +35,7 @@
     </form>
   </div>
 </div>
+</transition>
 </template>
 
 <script>
@@ -61,7 +65,7 @@ export default {
     //   '$route': 'fetchForm'
   },
   created() {
-      this.fetchForm();     
+    this.fetchForm();     
   },
   components:{
       'loading': Loading
@@ -69,14 +73,16 @@ export default {
   methods: {
         ...mapActions({
           createAccount: 'accounts/createAccount',
-          getForm: 'accounts/getForm'
+          getGetForm: 'accounts/getGetForm',
+          postGetForm: 'accounts/postGetForm',
+          getStoredFbProfile: 'home/getStoredFbProfile'
         }),
         updateControl(control){
-           control.attributes.class = "form-control";
-           control.attributes.hintclass = "form-text text-muted";
-           if(control.info){
-               control.hint = control.info;
-           }
+            control.attributes.class = "form-control";
+            control.attributes.hintclass = "form-text text-muted";
+            if(control.info){
+                control.hint = control.info;
+            }
         },
         checker(control, value){
             control.value = value; 
@@ -84,13 +90,33 @@ export default {
         },
         fetchForm(){
             let vm = this;
+            let profile = this.$store.state.home.profile;
+            let keys = [];
             vm.loading = true;
-            this.getForm({url: '/accounts/register'}).then(res =>{
-                this.controls = utils.sortObjects(res.data, 'order');              
-                vm.loading = false;
-            }).catch(err => {
-                vm.error = err;
-            });
+            let data = {};
+            if(typeof profile === 'object'){
+                keys = Object.keys(profile);
+                for(var key in keys){
+                    data[keys[key]] = profile[keys[key]];
+                }
+            }
+            if(keys.length > 0){
+                this.postGetForm({url: '/accounts/register', data: data})
+                .then(res => {
+                    this.controls = utils.sortObjects(res.data, 'order');              
+                    vm.loading = false;
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+            }else{
+                this.getGetForm({url: '/accounts/register'}).then(res =>{
+                    this.controls = utils.sortObjects(res.data, 'order');              
+                    vm.loading = false;
+                }).catch(err => {
+                    vm.error = err;
+                });
+            }
         },
         register: function(e){
           let data = {};
@@ -253,12 +279,15 @@ export default {
 };
 </script>
 
-<style lang='scss' scoped>
-body{
+<style lang='scss'>
+form.user-form{
     line-height: 0.5 !important;
+    margin: 20px 0px;
+}
+form.user-form input[type=file]{
+    line-height: 1.5 !important;
 }
 .form-control {
-    width: auto !important;
     border: 1px solid #c2afaf !important;
     border-radius: 0 !important;
     padding: 0.375rem 0.75rem !important;
@@ -272,9 +301,6 @@ body{
 
 .form-group {
     margin-bottom: 0.6rem;
-}
-.user-form{
-    margin: 20px 0px;
 }
 .passport{
     position: relative;
@@ -365,7 +391,14 @@ button{
     border: thin solid rgb(134, 10, 10) !important;
 }
 .error{
-    color: rgb(134, 10, 10) !important;
+    color: rgb(248, 116, 116) !important;
     font-weight: bold;
+}
+.slide-fade-enter-active, .slide-fade-leave-active {
+  transition: all .5s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateY(10px);
+  opacity: 0;
 }
 </style>

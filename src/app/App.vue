@@ -3,7 +3,9 @@
         <navigation v-if="displayFooter"></navigation>
         <div :class="container">
             <loading v-if="loader"></loading>
-            <router-view v-else></router-view>
+            <transition name="slide-fade" v-else>
+                <router-view></router-view>
+            </transition>
         </div>
         <xfooter v-if="displayFooter"></xfooter>
   </div>
@@ -27,7 +29,7 @@ export default {
   },
   computed: {
     loader(){
-        return this.$store.state.accounts.accounts.loading;
+        return this.$store.state.accounts.loading;
     },
     container(){
       if(this.$route.name == 'xhome'){
@@ -121,4 +123,11 @@ a, a:hover, .btn{
         font-size: 1.5rem;
       }
 } 
+.slide-fade-enter-active, .slide-fade-leave-active {
+  transition: all .5s ease;
+}
+.slide-fade-enter, .slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
 </style>

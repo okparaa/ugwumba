@@ -9,7 +9,7 @@ export const XHR = axios.create({
     
  XHR.interceptors.request.use(
     config => {
-      config.headers.authorization = Cookie.get("token");
+      config.headers.authorization = Cookie.get("token") || '';
       return config;
     },
     error => Promise.reject(error)

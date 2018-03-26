@@ -6,9 +6,9 @@
         <fb-login class="button mb-2" appId="394530471010474" @login="onLogin" @logout="onLogout" @sdk-loaded="sdkLoaded"></fb-login>
          <p class="mb-4"></p>
          <form>
-           <p>Username</p>
+           <p class="credential">Username</p>
            <input type="text" v-model="controls.username" :name="username" id="username" placeholder="Enter Username">
-           <p>Password</p>
+           <p class="credential">Password</p>
            <input type="password" v-model="controls.password" name="password" id="password" placeholder="Enter Password">
            <input type="submit" @click="accountLogin" name="submit" value="Login">
            <router-link :to="{}">Forget Password</router-link> |  <router-link :to="{name: 'registerAccount'}">Join us</router-link>
@@ -46,8 +46,8 @@ export default {
       fb_scopes: 'id,first_name, last_name, name, picture.width(150).height(150), gender, email',
       isConnected: false,
       profile: {
-        first_name: '',
-        last_name: '',
+        firstname: '',
+        lastname: '',
         gender: '',
         username: '',
         uid: '',
@@ -69,6 +69,7 @@ export default {
   },
   methods: {
       ...mapActions({
+        storeFbProfile: 'home/storeFbProfile'
       }),
       logout(){
         this.checkStatus();
@@ -81,39 +82,36 @@ export default {
        e.preventDefault();
        Auth.login({data: this.controls, url: 'accounts/login'})
        .then(res => {
-         if(res.data.token){  
-            Auth.setToken(res.data.token);          
-            Auth.setItem('passport', res.data.passport);          
-          }
           if(res.data.message == 'success'){
             this.controls.username = null;
             this.controls.password = null;
+            if(res.data.token){  
+              Auth.setToken(res.data.token);          
+              Auth.setItem('passport', res.data.passport);          
+            }
             this.$router.push('/posts/create'); 
+          }else{
+            var credentials = document.querySelectorAll('.credential');
+            credentials.forEach(cred => {
+              utils.addClass(cred, 'error');
+            })
           }
       })
       .catch(err => {
         console.log(err);    
       }); 
      },
-    fbRegister(data){
-      Auth.fbLogin({url: '/accounts/register', data: this.profile})
-      .then(res => {
-        this.$router.push('/accounts/register');
-      })
-      .catch(err => {
-        console.log(err);        
-      });
-    },
     getUserData() {
       window.FB.api('/me', 'GET', { fields: this.fb_scopes },
         profile => {
           this.profile.uid = profile.id;
           this.profile.passport = profile.picture.data.url;
-          this.profile.first_name = profile.first_name;
-          this.profile.last_name = profile.last_name;
+          this.profile.firstname = profile.first_name;
+          this.profile.lastname = profile.last_name;
           this.profile.username = profile.email;
           this.profile.gender = profile.gender;
-          this.fbRegister(this.profile);
+          this.storeFbProfile(this.profile);
+          this.$router.push('/accounts/register');
       })
     },
     sdkLoaded(payload) {
@@ -229,5 +227,12 @@ export default {
 
 .button {
   margin: auto;
+}
+.input-error {
+    border: thin solid rgb(134, 10, 10) !important;
+}
+.error{
+    color: rgb(248, 116, 116) !important;
+    font-weight: bold;
 }
 </style>

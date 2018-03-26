@@ -11,7 +11,6 @@ export default {
     });
     let sortedObjects = {};
     sortedKeys.forEach(key => {
-      objects[key].value = '';  
       sortedObjects[key] = objects[key];
     });
     return sortedObjects;
