@@ -1,5 +1,4 @@
 <template>
-<keep-alive>
   <div id="home">
     <div class="landing">
       <div id="login"  v-if="!loggedIn">
@@ -11,13 +10,12 @@
            <p class="credential">Password</p>
            <input type="password" v-model="controls.password" name="password" id="password" placeholder="Enter Password">
            <input type="submit" @click="accountLogin" name="submit" value="Login">
-           <router-link :to="{}">Forget Password</router-link> |  <router-link :to="{name: 'registerAccount'}">Join us</router-link>
          </form>
+         <router-link :to="{}">Forget Password</router-link> |  <router-link :to="{name: 'registerAccount'}">Join us</router-link>
       </div>
       <xmenu :menus="menus" @logout="logout"></xmenu>
     </div>
   </div>
-</keep-alive>
 </template>
 
 <script>
@@ -117,11 +115,16 @@ export default {
     sdkLoaded(payload) {
       this.isConnected = payload.isConnected
       this.FB = payload.FB;
+      if(this.isConnected){
+        this.getUserData();
+      }
     },
-    onLogin(response) {
-      this.isConnected = true;
-      this.profile.access_token = response.response.authResponse.accessToken;    
-      this.getUserData();
+    onLogin(data) {
+      if(data.response.status == 'connected'){
+        this.isConnected = true;
+        this.profile.access_token = data.response.authResponse.accessToken;    
+        this.getUserData();
+      }
     },
     onLogout(response) {
       this.isConnected = false;
@@ -147,18 +150,66 @@ export default {
     display: table-cell;
   }
   #login{
-    width: 320px;
-    height: 280px;
+    height: auto;
     background: rgba(17, 121, 72, 0.7);
     color: #fff;
-    transform: translate(-50%, -50%);
     box-sizing: border-box;
-    top: 50%;
-    left: 50%;
+    top: 30%;
+    left: 40%;
     position: absolute;
     border-radius: 10px;
     padding: 20px 20px;
   }
+  @media (max-width: 376px) { 
+    #login{
+      width: 80%;
+      top: 30%;
+      left: 10%;
+    }
+   }
+
+  @media (min-width: 376px) { 
+    #login{
+      width: 70%;
+      top: 30%;
+      left: 20%;
+    }
+   }
+
+  @media (min-width: 576px) { 
+    #login{
+      width: 40%;
+      top: 30%;
+      left: 33%;
+    }
+   }
+
+  // Medium devices (tablets, 768px and up)
+  @media (min-width: 768px) { 
+     #login{
+      width: 30%;
+      top: 30%;
+      left: 37%;
+    }
+   }
+
+  // Large devices (desktops, 992px and up)
+  @media (min-width: 992px) { 
+     #login{
+      width: 25%;
+      top: 30%;
+      left: 38%;
+    }
+   }
+
+  // Extra large devices (large desktops, 1200px and up)
+  @media (min-width: 1200px) { 
+     #login{
+      width: 25%;
+      top: 30%;
+      left: 38%;
+    }
+   }
   .top-nav{
     background-color: rgba(0, 0, 0, 0) !important;
     border-bottom: none !important;
@@ -178,7 +229,7 @@ export default {
 }
 #login input{
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 #login #username, #password{
   border: none;
@@ -186,6 +237,7 @@ export default {
   background: transparent;
   outline: none;
   color: #fff;
+  margin-bottom: 10px;
   font-size: 16px;
 }
 #login input[type="submit"]{

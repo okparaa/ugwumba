@@ -12,7 +12,7 @@ export default {
     return {
       isWorking: false,
       isConnected: false,
-      fb_scopes: 'id, first_name, picture.width(150).height(150)',
+      fb_scopes: 'id, first_name',
       picture: null,
     }
   },
@@ -75,7 +75,7 @@ export default {
     },
     continueLabel: {
       type: String,
-      default: 'Login with Facebook '
+      default: 'Continue'
     },
     loginLabel: {
       type: String,

@@ -1,5 +1,4 @@
 /* global window, FB, document */
-let vm = this;
 export function loadFbSdk(appId, version) {
     let src = `https://connect.facebook.net/en_US/sdk.js`;
    return new Promise(resolve => {

@@ -5,7 +5,7 @@
     <loading v-if="loading"></loading>
     <div v-if="error" class="error">
       {{ error }}
-    </div>
+    </div>  
     <form v-if="controls" class="user-form ml-4">
       <div v-for="(control, key) in controls" :key="key" class="form-group">
         <span v-if="control.type != 'File'">
@@ -103,8 +103,16 @@ export default {
             if(keys.length > 0){
                 this.postGetForm({url: '/accounts/register', data: data})
                 .then(res => {
-                    this.controls = utils.sortObjects(res.data, 'order');              
-                    vm.loading = false;
+                    if(res.data.status == 'connected'){
+                        if(res.data.token){  
+                            Auth.setToken(res.data.token);          
+                            Auth.setItem('passport', res.data.passport);          
+                        }
+                        this.$router.push('/posts/create');
+                    }else{
+                        this.controls = utils.sortObjects(res.data, 'order');              
+                        vm.loading = false;
+                    }
                 })
                 .catch(err => {
                     console.log(err);
