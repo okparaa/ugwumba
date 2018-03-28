@@ -19,14 +19,14 @@
             <li v-else class="nav-item"><router-link class="nav-link" :to="{name: menu.to}">{{menu.name}}</router-link> </li>
           </ul>
         </div>
-        <div class="collapse navbar-collapse" id="accounts">
+        <div class="collapse navbar-collapse" id="accounts"> 
           <ul class="navbar-accounts">
-            <li v-if="loggedIn" class="profile"><img class="img-fluid" style="width: 40px; height: auto; border-radius: 50%;" v-lazy="profileImage" >
+            <li v-if="loggedIn()" class="profile"><img class="img-fluid" style="width: 40px; height: auto; border-radius: 50%;" v-lazy="profileImage" >
             <!-- <img class="img-rounded-50 img-fluid" width="40" height="40" :data-src="profileImage" alt=""> -->
             </li>
-            <li v-if="loggedIn" class=""><a class="btn btn-link" style="border: none" @click="doLogout">Logout</a></li>
-            <li v-if="!loggedIn" class=""><router-link :to="{name: 'registerAccount'}">Join us</router-link></li>
-            <li v-if="!loggedIn" class=""><router-link :to="{name: 'xhome'}">Login</router-link></li>
+            <li v-if="loggedIn()" class=""><a class="btn btn-link" style="border: none" @click="doLogout">Logout</a></li>
+            <li v-if="!loggedIn()" class=""><router-link :to="{name: 'registerAccount'}">Join us</router-link></li>
+            <li v-if="!loggedIn()" class=""><router-link :to="{name: 'xhome'}">Login</router-link></li>
           </ul>
         </div>
       </div>
@@ -37,6 +37,8 @@
 import Auth from '@/lib/Auth';
 import config from '@/lib/config';
 import utils from '@/lib/utils';
+import * as Fbfxns from '@/lib/utils';
+import { mapGetters, mapActions } from 'vuex';
 export default {
   props: {
     menus: {
@@ -46,10 +48,19 @@ export default {
   },
   data(){
     return {
-      loggedIn: this.chackStatus(),
+    
     }
   },
   methods: {
+    ...mapGetters({
+      getConnected: 'accounts/getConnected'
+    }),
+    ...mapActions({
+       setConnected: 'accounts/setConnected'
+    }),
+    loggedIn(){
+      return this.getConnected();
+    },
     navbarClose(event){
       var links = document.getElementById('links');
       var accounts = document.getElementById('accounts');
@@ -83,15 +94,21 @@ export default {
       utils.toggle(accounts, 'open');      
       utils.toggle(nav, 'opened');
     },
-    doLogout(){      
+    doLogout(){    
       Auth.logout();
-      this.chackStatus();
-      this.$emit('logout');
-      this.$router.push('/');
-    },
-    chackStatus(){
-      this.loggedIn = Auth.isloggedIn();
-      return this.loggedIn;
+      this.setConnected(false);
+      if(window.FB){
+        window.FB.logout(response => {
+          this.$emit('logout', response)
+          this.$router.push('/');
+        })
+        .catch(err => {
+          console.log(err);
+          this.$router.push('/');
+        });
+      }else{
+        this.$router.push('/');
+      }
     },
   },
   mounted(){
@@ -104,7 +121,7 @@ export default {
   },
   computed: {
     profileImage(){
-      return config.url + '/uploads/' + Auth.getPassport('passport');
+      return config.url + '/uploads/' + Auth.getItem('passport');
     }
   }
 }

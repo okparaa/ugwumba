@@ -1,5 +1,8 @@
 export default {
-    getAccount(){
-
+    getConnected(state, getters){
+        return state.accounts.connected;
+    },
+    getLoading(state, getters){
+        return state.accounts.loading;
     }  
 };

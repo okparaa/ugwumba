@@ -30,12 +30,8 @@ export default {
   },
   methods: {
     buttonClicked() {
-      this.$emit('click')
-      if (this.isConnected) {
-        this.logout();
-      } else {
-        this.login();
-      }
+      this.$emit('click');
+      this.login();
     },
     logout() {
       this.isWorking = true;

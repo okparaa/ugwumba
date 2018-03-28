@@ -1,7 +1,7 @@
 <template>
   <footer>
     <div class="container-fluid text-center">
-      &copy; all rights reserved
+      &copy; all rights reserved.
     </div>
   </footer>
 </template>

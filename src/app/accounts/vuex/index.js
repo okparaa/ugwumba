@@ -3,7 +3,8 @@ import getters from './getters';
 import mutations from './mutations';
 const state = {
   accounts: {
-    loading: false
+    loading: false,
+    connected: false
   }
 };
 

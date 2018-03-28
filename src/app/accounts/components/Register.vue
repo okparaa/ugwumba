@@ -41,7 +41,7 @@
 <script>
 import loadImage from 'blueimp-load-image';
 import Croppr from 'croppr';
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapActions, mapGetters } from 'vuex';
 import utils from '@/lib/utils';
 import Auth from '@/lib/Auth';
 import Loading from '../../components/Loading';
@@ -75,7 +75,10 @@ export default {
           createAccount: 'accounts/createAccount',
           getGetForm: 'accounts/getGetForm',
           postGetForm: 'accounts/postGetForm',
-          getStoredFbProfile: 'home/getStoredFbProfile'
+          setConnected: 'accounts/setConnected',
+        }),
+        ...mapGetters({
+            getProfile: 'home/getProfile'
         }),
         updateControl(control){
             control.attributes.class = "form-control";
@@ -90,7 +93,7 @@ export default {
         },
         fetchForm(){
             let vm = this;
-            let profile = this.$store.state.home.profile;
+            let profile = this.getProfile();
             let keys = [];
             vm.loading = true;
             let data = {};
@@ -105,8 +108,9 @@ export default {
                 .then(res => {
                     if(res.data.status == 'connected'){
                         if(res.data.token){  
+                            this.setConnected(true);
                             Auth.setToken(res.data.token);          
-                            Auth.setItem('passport', res.data.passport);          
+                            Auth.setItem('passport', res.data.passport);                        
                         }
                         this.$router.push('/posts/create');
                     }else{
@@ -143,13 +147,14 @@ export default {
           });
           var resp = this.createAccount({url: '/accounts/register', data: data})
           .then(res => {
+              button.removeChild(button.firstChild);
               if(res.data.message === 'success'){
+                  this.setConnected(true);
                   Auth.setToken(res.data.token);
-                  Auth.setPassport(res.data.passport);
+                  Auth.setItem('passport', res.data.passport);
                   this.$router.push('/posts/create');
               }else{
                 let button = document.getElementById('register');
-                button.removeChild(button.firstChild);
                 for(var key in vm.controls){
                     if(res.data[key] !== undefined){
                         Object.keys(res.data[key]).forEach(ky => {

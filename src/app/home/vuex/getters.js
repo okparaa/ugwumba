@@ -1,5 +1,5 @@
 export default {
-    getAccount(){
-
+    getProfile(state, getters){
+        return state.profile;
     } 
 };

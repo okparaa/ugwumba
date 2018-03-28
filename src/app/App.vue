@@ -2,7 +2,7 @@
   <div id="app" v-cloak>
         <navigation v-if="displayFooter"></navigation>
         <div :class="container">
-            <loading v-if="loader"></loading>
+            <loading v-if="loader()"></loading>
             <transition name="slide-fade" v-else>
                 <router-view></router-view>
             </transition>
@@ -14,7 +14,7 @@
 <script>
 const Navigation = () => import("./navigation/components/Navigation");
 const Footer = () => import("./components/Footer");
-import { mapState } from 'vuex';
+import { mapGetters } from 'vuex';
 import Loading from './components/Loading';
 export default {
   name: "app",
@@ -27,10 +27,15 @@ export default {
     'xfooter': Footer,
     'loading': Loading
   },
-  computed: {
-    loader(){
-        return this.$store.state.accounts.loading;
+  methods: {
+      ...mapGetters({
+          getLoading: 'accounts/getLoading'
+      }),
+      loader(){
+        return this.getLoading();
     },
+  },
+  computed: {
     container(){
       if(this.$route.name == 'xhome'){
         return "x-home";
@@ -127,7 +132,6 @@ a, a:hover, .btn{
   transition: all .5s ease;
 }
 .slide-fade-enter, .slide-fade-leave-to {
-  transform: translateY(-10px);
   opacity: 0;
 }
 </style>

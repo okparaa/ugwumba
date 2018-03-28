@@ -11,5 +11,8 @@ export default {
     },
     sendSignedRequest({state, commit}, payload){
         return lib.XHR.post(payload.url, payload.data);
+    },
+    setConnected({state, commit}, payload){
+        commit('SET_CONNECTED', payload);
     }
 }

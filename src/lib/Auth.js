@@ -38,7 +38,7 @@ export default {
   },
   removeItem(token = null){
     if (token) {
-      Cookie.remove('token', token);
+      Cookie.remove(token);
     } else {
       Cookie.remove('token');
     }

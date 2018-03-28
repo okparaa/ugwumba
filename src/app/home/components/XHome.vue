@@ -1,15 +1,15 @@
 <template>
   <div id="home">
     <div class="landing">
-      <div id="login"  v-if="!loggedIn">
+      <div id="login"  v-if="!loggedIn()">
         <fb-login class="button mb-2" appId="394530471010474" @login="onLogin" @logout="onLogout" @sdk-loaded="sdkLoaded"></fb-login>
          <p class="mb-4"></p>
          <form>
-           <p class="credential">Username</p>
+           <p id="user-credential">Username</p>
            <input type="text" v-model="controls.username" :name="username" id="username" placeholder="Enter Username">
-           <p class="credential">Password</p>
+           <p id="pass-credential">Password</p>
            <input type="password" v-model="controls.password" name="password" id="password" placeholder="Enter Password">
-           <input type="submit" @click="accountLogin" name="submit" value="Login">
+           <button id="login-button" @click.prevent.stop="accountLogin" name="submit">Login</button>
          </form>
          <router-link :to="{}">Forget Password</router-link> |  <router-link :to="{name: 'registerAccount'}">Join us</router-link>
       </div>
@@ -21,7 +21,7 @@
 <script>
 const Menu = () => import('../../navigation/components/Menu');
 const FbLogin = () => import('../../components/FbLogin');
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 import Auth from '@/lib/Auth';
 import utils from '@/lib/utils';
 export default {
@@ -35,7 +35,6 @@ export default {
         { name: "Politics", to: ''},
         { name: "Business", to: ''},
       ],
-      loggedIn: this.checkStatus(),
       username: null,
       controls: {
         username: null,
@@ -56,7 +55,7 @@ export default {
     };
   },
   computed: {
-
+    
   },
   components: {
      'xmenu': Menu,
@@ -67,32 +66,45 @@ export default {
   },
   methods: {
       ...mapActions({
-        storeFbProfile: 'home/storeFbProfile'
+        storeFbProfile: 'home/storeFbProfile',
+        setConnected: 'accounts/setConnected'
       }),
+      ...mapGetters({
+        getConnected: 'accounts/getConnected'
+      }),
+      loggedIn(){
+        return this.getConnected();
+      },
       logout(){
-        this.checkStatus();
+        this.setConnected(false);
       },
-      checkStatus(){
-        this.loggedIn = Auth.isloggedIn();
-        return this.loggedIn;
-      },
-      accountLogin(e){
-       e.preventDefault();
+      accountLogin(){
+        let button = document.getElementById('login-button');
+        if(utils.hasClass(button.firstChild, 'fa-spin')){
+            return;
+        }
+        let i = document.createElement('i');
+        let nfa = document.createElement('i');
+        utils.addClass(nfa, 'fa fa-refresh fa-spin magr');
+        button.insertBefore(nfa, button.firstChild);
        Auth.login({data: this.controls, url: 'accounts/login'})
        .then(res => {
-          if(res.data.message == 'success'){
+         button.removeChild(button.firstChild);
+          if(res.data && res.data.message == 'success'){
             this.controls.username = null;
             this.controls.password = null;
-            if(res.data.token){  
+            if(res.data.token){
+              this.setConnected(true);
               Auth.setToken(res.data.token);          
               Auth.setItem('passport', res.data.passport);          
             }
             this.$router.push('/posts/create'); 
           }else{
-            var credentials = document.querySelectorAll('.credential');
-            credentials.forEach(cred => {
-              utils.addClass(cred, 'error');
-            })
+            var username = document.querySelectorAll('#user-credential');
+            var password = document.querySelectorAll('#pass-credential');
+            utils.addClass(username, 'error');
+            utils.addClass(password, 'error');
+
           }
       })
       .catch(err => {
@@ -115,9 +127,6 @@ export default {
     sdkLoaded(payload) {
       this.isConnected = payload.isConnected
       this.FB = payload.FB;
-      if(this.isConnected){
-        this.getUserData();
-      }
     },
     onLogin(data) {
       if(data.response.status == 'connected'){
@@ -240,9 +249,10 @@ export default {
   margin-bottom: 10px;
   font-size: 16px;
 }
-#login input[type="submit"]{
+#login #login-button{
   border: none;
   outline: none;
+  width: 100%;
   height: 40px;
   background: #137439;
   color:#fff;
